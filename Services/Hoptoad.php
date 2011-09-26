@@ -97,11 +97,14 @@ class Services_Hoptoad
 	 * @return void
 	 * @author Rich Cavanaugh
 	 */	
-	function __construct($apiKey, $environment='production', $client='pear', $reportESTRICT=false, $timeout=2)
+	//function __construct($apiKey, $environment='production', $client='pear', $reportESTRICT=false, $timeout=2)
+	function __construct($apiKey, $environment='production', $client='curl', $reportESTRICT=false, $timeout=2)
 	{
 		$this->apiKey = $apiKey;
-		$this->environment = $environment;
-		$this->client = $client;
+		//$this->environment = $environment;
+		$this->environment = (empty($environment) ? 'production' : $environment);
+		//$this->client = $client;
+		$this->client = (empty($client) ? 'curl' : $client);
 		$this->reportESTRICT = $reportESTRICT;
 		$this->timeout = $timeout;
 		$this->setup();
@@ -146,6 +149,14 @@ class Services_Hoptoad
 	{
 		$this->notify(get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine(), $exception->getTrace());
 	}
+	
+	//{
+	/*public static function handleException($exception)
+	{
+		$hoptoad = new $class($apiKey, $environment, $client);
+		$hoptoad->installNotifierHandlers();
+	}*/
+	//}
 
 	/**
 	 * Set the values to be used for the next notice sent to Hoptoad
@@ -185,11 +196,12 @@ class Services_Hoptoad
 			'Content-Type'	=> 'text/xml'
 		);
 		$body = $this->buildXmlNotice();
-
+		
 		try {
 			$status = call_user_func_array(array($this, $this->client . 'Request'), array($url, $headers, $body));
 			if ($status != 200) $this->handleErrorResponse($status);
 		} catch (RuntimeException $e) {
+			echo "caught RuntimeException<br/>";	//@ DELETE
 			// TODO do something reasonable with the runtime exception.
 			// we can't really throw our runtime exception since we're likely in
 			// an exception handler. Punt on this for now and come back to it.
@@ -451,3 +463,5 @@ class Services_Hoptoad
 		return $response->getStatus();
 	}
 }
+
+?>
